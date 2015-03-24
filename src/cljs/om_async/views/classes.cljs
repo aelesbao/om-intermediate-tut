@@ -4,24 +4,24 @@
             [om-async.http :as http]
             [om-async.components.editable :as e-com]))
 
-(defn on-edit [id title]
+(defn- get-classes [app]
+  (http/edn-xhr
+    {:method      :get
+     :url         "classes"
+     :on-complete #(om/transact! app :classes (fn [_] %))}))
+
+(defn update-class [id title]
   (http/edn-xhr
     {:method      :put
      :url         (str "class/" id)
      :data        {:class/title title}
      :on-complete #(println "server response:" %)}))
 
-(defn- load-classes [app]
-  (http/edn-xhr
-    {:method      :get
-     :url         "classes"
-     :on-complete #(om/transact! app :classes (fn [_] %))}))
-
 (defn view [app _]
   (reify
     om/IWillMount
     (will-mount [_]
-      (load-classes app))
+      (get-classes app))
 
     om/IRender
     (render [_]
@@ -33,5 +33,5 @@
                           (let [id (:class/id class)]
                             (om/build e-com/editable class
                                       {:opts {:edit-key :class/title
-                                              :on-edit  #(on-edit id %)}})))
+                                              :on-edit  #(update-class id %)}})))
                         (:classes app)))))))
