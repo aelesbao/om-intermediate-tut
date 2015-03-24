@@ -1,15 +1,11 @@
 (ns om-async.core
-  (:require [cljs.reader :as reader]
-            [figwheel.client :as fw]
-            [goog.events :as events]
+  (:require [figwheel.client :as fw]
             [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true])
-  (:import [goog.net XhrIo]
-           goog.net.EventType
-           [goog.events EventType]))
+            [om.dom :as dom :include-macros true]))
 
 (enable-console-print!)
 
-(println "Hello world!")
+(def app-state
+  (atom {:classes []}))
 
 (fw/start {})
