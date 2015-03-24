@@ -10,6 +10,11 @@
 (def uri "datomic:free://localhost:4334/om_async")
 (def conn (d/connect uri))
 
+(defn- db [] (d/db conn))
+
+(defn- query-db [query & params]
+  (apply (partial d/q query (db)) params))
+
 (defn index []
   (file-response "public/html/index.html" {:root "resources"}))
 
@@ -19,31 +24,27 @@
    :body (pr-str data)})
 
 (defn update-class [id params]
-  (let [db    (d/db conn)
-        title (:class/title params)
-        eid   (ffirst
-                (d/q '[:find ?class
-                       :in $ ?id
-                       :where 
-                       [?class :class/id ?id]]
-                  db id))]
+  (let [title (:class/title params)
+        eid   (-> '[:find ?class
+                    :in $ ?id
+                    :where [?class :class/id ?id]]
+                  (query-db id)
+                  ffirst)]
     (d/transact conn [[:db/add eid :class/title title]])
     (generate-response {:status :ok})))
 
 (defn classes []
-  (let [db (d/db conn)
-        classes
-        (vec (map #(d/touch (d/entity db (first %)))
-               (d/q '[:find ?class
-                      :where
-                      [?class :class/id]]
-                 db)))]
+  (let [classes (->> '[:find ?class
+                       :where [?class :class/id]]
+                     query-db
+                     (map #(d/touch (d/entity (db) (first %))))
+                     vec)]
     (generate-response classes)))
 
 (defroutes routes
   (GET "/" [] (index))
   (GET "/classes" [] (classes))
-  (PUT "/class/:id/update"
+  (PUT "/class/:id"
     {params :params edn-body :edn-body}
     (update-class (:id params) edn-body))
   (route/files "/" {:root "resources/public"}))
@@ -61,6 +62,6 @@
                  :edn-body (read-inputstream-edn body))
                request))))
 
-(def handler 
+(def handler
   (-> routes
       parse-edn-body))
