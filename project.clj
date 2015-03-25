@@ -13,7 +13,8 @@
                  [ring "1.3.2"]
                  [compojure "1.3.1"]
                  [figwheel "0.2.4-SNAPSHOT"]
-                 [com.datomic/datomic-free "0.9.5130" :exclusions [joda-time]]]
+                 [com.datomic/datomic-free "0.9.5130" :exclusions [joda-time]]
+                 [cljs-ajax "0.3.10"]]
 
   :plugins [[lein-cljsbuild "1.0.4"]
             [lein-figwheel "0.2.4-SNAPSHOT"]]

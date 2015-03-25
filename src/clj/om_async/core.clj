@@ -44,7 +44,7 @@
 (defroutes routes
   (GET "/" [] (index))
   (GET "/classes" [] (classes))
-  (PUT "/class/:id"
+  (PUT "/classes/:id"
     {params :params edn-body :edn-body}
     (update-class (:id params) edn-body))
   (route/files "/" {:root "resources/public"}))

@@ -1,21 +1,22 @@
 (ns om-async.views.classes
   (:require [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]
-            [om-async.http :as http]
+            [ajax.core :refer [GET PUT]]
             [om-async.components.editable :as e-com]))
 
+(defn error-handler [{:keys [status status-text]}]
+  (.log js/console (str "something bad happened: " status " " status-text)))
+
 (defn- get-classes [app]
-  (http/edn-xhr
-    {:method      :get
-     :url         "classes"
-     :on-complete #(om/transact! app :classes (fn [_] %))}))
+  (GET "/classes"
+       {:handler       #(om/transact! app :classes (fn [_] %))
+        :error-handler error-handler}))
 
 (defn update-class [id title]
-  (http/edn-xhr
-    {:method      :put
-     :url         (str "class/" id)
-     :data        {:class/title title}
-     :on-complete #(println "server response:" %)}))
+  (PUT (str "/classes/" id)
+       {:params        {:class/title title}
+        :handler       #(println "server response:" %)
+        :error-handler error-handler}))
 
 (defn view [app _]
   (reify
